@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/ayanAhm4d/URL-shortener/api/database"
+	"github.com/coderj001/URL-shortener/api/database"
 	"github.com/gin-gonic/gin"
 )
 

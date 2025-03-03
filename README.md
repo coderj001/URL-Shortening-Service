@@ -49,6 +49,7 @@ A simple URL shortener built with Go, Gin, and MySQL.
 
 
 ### TODO:
+- Add TDD
 - Add Htmx frontend
 - Add Auth (with db changes accordingly)
 

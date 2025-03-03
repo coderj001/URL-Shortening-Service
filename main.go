@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ayanAhm4d/URL-shortener/api/database"
-	"github.com/ayanAhm4d/URL-shortener/api/routes"
+	"github.com/coderj001/URL-shortener/api/database"
+	"github.com/coderj001/URL-shortener/api/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )

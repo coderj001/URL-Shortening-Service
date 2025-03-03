@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/ayanAhm4d/URL-shortener/api/database"
-	"github.com/ayanAhm4d/URL-shortener/api/helpers"
+	"github.com/coderj001/URL-shortener/api/database"
+	"github.com/coderj001/URL-shortener/api/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
