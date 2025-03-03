@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/ayanAhm4d/URL-shortener/api/database"
 	"github.com/ayanAhm4d/URL-shortener/api/routes"
@@ -10,6 +11,12 @@ import (
 )
 
 func setupRoutes(router *gin.Engine, db *database.MySQLStore) {
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"ping": "pong",
+		})
+	})
+
 	router.GET("/:url", func(c *gin.Context) {
 		routes.ResolveURL(c, db)
 	})

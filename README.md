@@ -47,5 +47,10 @@ A simple URL shortener built with Go, Gin, and MySQL.
 - **Endpoint:** `GET /:shortURL`
 - **Response:** Redirects to the original URL.
 
+
+### TODO:
+- Add Htmx frontend
+- Add Auth (with db changes accordingly)
+
 ## License
 MIT License.
