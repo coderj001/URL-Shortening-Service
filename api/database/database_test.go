@@ -20,12 +20,18 @@ func TestMain(m *testing.M) {
 
 	testDB = &MySQLStore{db: db}
 
+	testDB.db.Exec(`
+	DROP TABLE IF EXISTS rate_limits;
+	DROP TABLE IF EXISTS urls;
+	`)
+
 	// Ensure tables exist
 	testDB.db.Exec(`
 	CREATE TABLE IF NOT EXISTS urls (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		short_url VARCHAR(255) UNIQUE NOT NULL,
 		original_url TEXT NOT NULL,
+		clicks INTEGER DEFAULT 0,
 		expires_at TIMESTAMP NOT NULL
 	);`)
 
@@ -60,7 +66,7 @@ func TestGetURL_NotFound(t *testing.T) {
 }
 
 func TestRateLimit(t *testing.T) {
-	ip := "192.168.1.1"
+	ip := "localhost"
 
 	remaining, _, err := testDB.CheckRateLimit(ip)
 	assert.Nil(t, err, "Expected no error when checking rate limit")
@@ -70,4 +76,19 @@ func TestRateLimit(t *testing.T) {
 	testDB.CheckRateLimit(ip)
 	remaining, _, _ = testDB.CheckRateLimit(ip)
 	assert.Equal(t, 8, remaining, "Expected remaining limit to decrease")
+}
+
+func TestClickCount(t *testing.T) {
+	// Save a test URL
+	testDB.SaveURL("test123", "https://example.com", 24)
+
+	// Increment clicks
+	err := testDB.ClickCount("test123")
+	assert.Nil(t, err)
+
+	// Verify clicks count
+	var clicks int
+	err = testDB.db.QueryRow("SELECT clicks FROM urls WHERE short_url = ?", "test123").Scan(&clicks)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, clicks, "Expected 1 click count")
 }

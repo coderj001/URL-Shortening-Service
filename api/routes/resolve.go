@@ -21,5 +21,11 @@ func ResolveURL(c *gin.Context, db *database.MySQLStore) {
 		return
 	}
 
+	err = db.ClickCount(short)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error while updating click count"})
+		return
+	}
+
 	c.Redirect(http.StatusMovedPermanently, original)
 }

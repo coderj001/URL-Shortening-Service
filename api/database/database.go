@@ -40,6 +40,7 @@ func NewMySQLStore() (*MySQLStore, error) {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			short_url VARCHAR(255) UNIQUE NOT NULL,
 			original_url TEXT NOT NULL,
+			clicks INTEGER DEFAULT 0,
 			expires_at TIMESTAMP NOT NULL
 		);`
 
@@ -60,6 +61,22 @@ func NewMySQLStore() (*MySQLStore, error) {
 	}
 
 	return &MySQLStore{db: db}, nil
+}
+
+func (s *MySQLStore) ClickCount(short string) error {
+	var click int
+	err := s.db.QueryRow(
+		"SELECT clicks FROM urls WHERE short_url = ? AND expires_at > NOW()",
+		short,
+	).Scan(&click)
+	if err != nil {
+		return err
+	}
+	_, err = s.db.Exec("UPDATE urls SET clicks = ? WHERE short_url = ?", click+1, short)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *MySQLStore) SaveURL(short, original string, expiry time.Duration) error {
