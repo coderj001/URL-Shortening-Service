@@ -11,7 +11,7 @@ import (
 )
 
 func setupRoutes(router *gin.Engine, db *database.MySQLStore) {
-	router.GET("/", func(c *gin.Context) {
+	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"ping": "pong",
 		})

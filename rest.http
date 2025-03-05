@@ -1,0 +1,21 @@
+@url = http://localhost:3000
+@contenttype = application/json
+
+###
+
+GET {{url}}/ping
+
+###
+
+GET {{url}}/abc
+
+###
+
+POST {{url}}/api/v1
+Content-Type: {{contenttype}}
+
+{
+   "url": "http://example.com",
+   "short": "abc",
+   "expiry": 24
+}

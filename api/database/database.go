@@ -34,6 +34,30 @@ func NewMySQLStore() (*MySQLStore, error) {
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
+	// Ensure tables exist
+	urlsTableQuery := `
+		CREATE TABLE IF NOT EXISTS urls (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			short_url VARCHAR(255) UNIQUE NOT NULL,
+			original_url TEXT NOT NULL,
+			expires_at TIMESTAMP NOT NULL
+		);`
+
+	if _, err := db.Exec(urlsTableQuery); err != nil {
+		return nil, fmt.Errorf("failed to create tables: %w", err)
+	}
+
+	rateLimitTableQuery := `
+		CREATE TABLE IF NOT EXISTS rate_limits (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			client_ip VARCHAR(45) UNIQUE NOT NULL,
+			remaining INT NOT NULL,
+			reset_at TIMESTAMP NOT NULL
+		);`
+
+	if _, err := db.Exec(rateLimitTableQuery); err != nil {
+		return nil, fmt.Errorf("failed to create tables: %w", err)
+	}
 
 	return &MySQLStore{db: db}, nil
 }
