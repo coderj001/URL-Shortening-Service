@@ -19,3 +19,8 @@ Content-Type: {{contenttype}}
    "short": "abc",
    "expiry": 24
 }
+
+###
+
+GET {{url}}/api/v1/clicks/abc
+Content-Type: {{contenttype}}

@@ -63,6 +63,18 @@ func NewMySQLStore() (*MySQLStore, error) {
 	return &MySQLStore{db: db}, nil
 }
 
+func (s *MySQLStore) GetClickCount(shortID string) (int, error) {
+	var clicks int
+	err := s.db.QueryRow(
+		"SELECT clicks FROM urls WHERE short_url = ? AND expires_at > NOW()",
+		shortID,
+	).Scan(&clicks)
+	if err != nil {
+		return 0, err
+	}
+	return clicks, nil
+}
+
 func (s *MySQLStore) ClickCount(short string) error {
 	var click int
 	err := s.db.QueryRow(

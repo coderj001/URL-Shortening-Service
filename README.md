@@ -2,11 +2,12 @@
 
 A simple URL shortener built with Go, Gin, and MySQL.
 
-## Features
-- Shorten URLs with custom aliases
-- Redirect shortened URLs
-- Rate limiting to prevent abuse
-- Docker support for easy deployment
+## System Design Features 
+- [x] Shorten URLs with custom aliases
+- [x] Redirect shortened URLs
+- [x] Rate limiting to prevent abuse
+- [x] Track URL clicks
+- [ ] Implement Redis/Memcached for caching frequent URL redirects
 
 ## Prerequisites
 - Docker
@@ -21,7 +22,6 @@ A simple URL shortener built with Go, Gin, and MySQL.
 2. The service will be available at `http://localhost:3000`.
 
 ## API Endpoints
-
 ### Shorten a URL
 - **Endpoint:** `POST /api/v1`
 - **Request Body:**
