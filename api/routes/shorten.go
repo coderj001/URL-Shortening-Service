@@ -3,6 +3,7 @@ package routes
 import (
 	"math"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -90,7 +91,7 @@ func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 
 	c.JSON(http.StatusOK, response{
 		URL:             body.URL,
-		CustomShort:     "localhost:3000/" + short,
+		CustomShort:     os.Getenv("DOMAIN") + "/" + short,
 		Expiry:          body.Expiry,
 		XRateRemaining:  remaining,
 		XRateLimitReset: math.Ceil(time.Until(resetAt).Minutes()),

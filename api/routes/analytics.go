@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/coderj001/URL-shortener/api/database"
@@ -10,7 +9,6 @@ import (
 
 func AnalyticsShortURL(c *gin.Context, db *database.MySQLStore) {
 	shortID := c.Param("shortID")
-	fmt.Println("======> shortID", shortID)
 
 	counts, err := db.GetClickCount(shortID)
 

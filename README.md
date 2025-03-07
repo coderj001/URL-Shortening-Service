@@ -2,12 +2,28 @@
 
 A simple URL shortener built with Go, Gin, and MySQL.
 
-## System Design Features 
+## System Design Features (Monorepo)
 - [x] Shorten URLs with custom aliases
 - [x] Redirect shortened URLs
 - [x] Rate limiting to prevent abuse
 - [x] Track URL clicks
+- [ ] Implement structured logging
+- [ ] Implement a ID generation mechanism 
+- [ ] Timestamp of creation and last access
 - [ ] Implement Redis/Memcached for caching frequent URL redirects
+- [ ] Create a separate analytics microservice
+- [ ] Soft delete mechanism for unused/expired URLs
+- [ ] Periodic cleanup job to remove expired entries
+- [ ] Block URLs from known malicious domains
+- [ ] Implement user registration and authentication
+- [ ] OAuth/JWT-based authentication
+- [ ] Role-based access control (RBAC)
+  - [ ] Free tier users
+  - [ ] Premium users with additional features
+- [ ] Optimize database queries and indexing
+- [ ] Add TDD 
+- [ ] Integration Tests
+- [ ] Frontend/Template HTmX
 
 ## Prerequisites
 - Docker
@@ -48,10 +64,6 @@ A simple URL shortener built with Go, Gin, and MySQL.
 - **Response:** Redirects to the original URL.
 
 
-### TODO:
-- Add TDD
-- Add Htmx frontend
-- Add Auth (with db changes accordingly)
 
 ## License
 MIT License.

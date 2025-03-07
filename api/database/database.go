@@ -31,6 +31,10 @@ func NewMySQLStore() (*MySQLStore, error) {
 		return nil, err
 	}
 
+	db.SetConnMaxIdleTime(time.Minute * 3)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(10)
+
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
