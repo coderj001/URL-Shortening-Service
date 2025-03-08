@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var testDB *database.MySQLStore
+
 func TestMain(m *testing.M) {
 	if err := godotenv.Load("./.env"); err != nil {
 		panic("Failed to load .env file")
@@ -39,10 +41,14 @@ func TestPingPong(t *testing.T) {
 func TestShortenURL(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	// Initialize router and mock DB
 	router := gin.Default()
-	mockDB, _ := database.NewMySQLStore() // Ensure DB is initialized
-	setupRoutes(router, mockDB)
+	testDB, _ = database.NewMySQLStore() // Ensure DB is initialized
+	defer func() {
+		testDB.Exec("DROP TABLE IF EXISTS rate_limits;")
+		testDB.Exec("DROP TABLE IF EXISTS urls;")
+		testDB.Close()
+	}()
+	setupRoutes(router, testDB)
 
 	body := `{"url": "https://example.com", "short": "test123", "expiry": 24}`
 	req, _ := http.NewRequest("POST", "/api/v1", bytes.NewBufferString(body))

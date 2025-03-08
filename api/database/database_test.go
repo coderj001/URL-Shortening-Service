@@ -20,10 +20,11 @@ func TestMain(m *testing.M) {
 
 	testDB = &MySQLStore{db: db}
 
-	testDB.db.Exec(`
-	DROP TABLE IF EXISTS rate_limits;
-	DROP TABLE IF EXISTS urls;
-	`)
+	defer func() {
+		testDB.db.Exec("DROP TABLE IF EXISTS rate_limits;")
+		testDB.db.Exec("DROP TABLE IF EXISTS urls;")
+		testDB.Close()
+	}()
 
 	// Ensure tables exist
 	testDB.db.Exec(`
@@ -45,7 +46,6 @@ func TestMain(m *testing.M) {
 
 	exitCode := m.Run()
 
-	db.Close()
 	os.Exit(exitCode)
 }
 

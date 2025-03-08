@@ -13,8 +13,15 @@ type MySQLStore struct {
 	db *sql.DB
 }
 
+func (s *MySQLStore) Exec(sql_query string) error {
+	if _, err := s.db.Exec(sql_query); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *MySQLStore) Close() {
-	panic("unimplemented")
+	s.db.Close()
 }
 
 func NewMySQLStore() (*MySQLStore, error) {
