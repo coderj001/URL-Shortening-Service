@@ -51,7 +51,7 @@ func (s *APITestSuite) TestShortenURL() {
 	router := gin.Default()
 	setupRoutes(router, s.db)
 
-	body := `{"url": "https://example.com", "short": "test123", "expiry": 24}`
+	body := `{"url": "https://youtube.com", "short": "test125", "expiry": 24}`
 	req, _ := http.NewRequest("POST", "/api/v1", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -65,8 +65,8 @@ func (s *APITestSuite) TestShortenURL() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	s.Nil(err, "Response should be valid JSON")
 
-	s.Equal("https://example.com", response["url"], "Expected URL to match")
-	s.Equal("localhost:3000/test123", response["short"], "Expected short code to match")
+	s.Equal("https://youtube.com", response["url"], "Expected URL to match")
+	s.Equal("localhost:3000/test125", response["short"], "Expected short code to match")
 }
 
 func (s *APITestSuite) TestResolveURL() {
@@ -82,6 +82,50 @@ func (s *APITestSuite) TestResolveURL() {
 
 	s.Equal(http.StatusMovedPermanently, w.Code, "Expected status 200 OK")
 	s.Equal("https://google.com", w.Header().Get("Location"))
+}
+
+func (s *APITestSuite) TestSaveURL() {
+	err := s.db.SaveURL("abc1234", "https://gmail.com", 24)
+	s.Nil(err, "Expected no error when saving a URL")
+
+	// Verify data is saved
+	url, err := s.db.GetURL("abc1234")
+	s.Nil(err, "Expected no error when retrieving a URL")
+	s.Equal("https://gmail.com", url, "Expected the retrieved URL to match")
+}
+
+func (s *APITestSuite) TestGetURL_NotFound() {
+	url, err := s.db.GetURL("nonexistent")
+	s.Nil(err, "Expected no error when retrieving a nonexistent URL")
+	s.Empty(url, "Expected an empty result for nonexistent URL")
+}
+
+func (s *APITestSuite) TestRateLimit() {
+	ip := "localhost"
+
+	remaining, _, err := s.db.CheckRateLimit(ip)
+	s.Nil(err, "Expected no error when checking rate limit")
+	s.Equal(10, remaining, "Expected initial remaining limit to be 10")
+
+	// Consume 1 request
+	s.db.CheckRateLimit(ip)
+	remaining, _, _ = s.db.CheckRateLimit(ip)
+	s.Equal(8, remaining, "Expected remaining limit to decrease")
+}
+
+func (s *APITestSuite) TestClickCount() {
+	// Save a test URL
+	s.db.SaveURL("test123", "https://example.com", 24)
+
+	// Increment clicks
+	err := s.db.ClickCount("test123")
+	s.Nil(err)
+
+	// Verify clicks count
+	var clicks int
+	err = s.db.DB().QueryRow("SELECT clicks FROM urls WHERE short_url = ?", "test123").Scan(&clicks)
+	s.Nil(err)
+	s.Equal(1, clicks, "Expected 1 click count")
 }
 
 func TestAPI(t *testing.T) {

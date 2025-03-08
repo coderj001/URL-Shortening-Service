@@ -13,6 +13,10 @@ type MySQLStore struct {
 	db *sql.DB
 }
 
+func (s *MySQLStore) DB() *sql.DB {
+	return s.db
+}
+
 func (s *MySQLStore) Exec(sql_query string) error {
 	if _, err := s.db.Exec(sql_query); err != nil {
 		return err
