@@ -67,3 +67,24 @@ func TestShortenURL(t *testing.T) {
 	assert.Equal(t, "https://example.com", response["url"], "Expected URL to match")
 	assert.Equal(t, "localhost:3000/test123", response["short"], "Expected short code to match")
 }
+
+func TestResolveURL(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	router := gin.Default()
+	testDB, _ = database.NewMySQLStore() // Ensure DB is initialized
+	defer func() {
+		testDB.Exec("DROP TABLE IF EXISTS rate_limits;")
+		testDB.Exec("DROP TABLE IF EXISTS urls;")
+		testDB.Close()
+	}()
+	testDB.SaveURL("test123", "https://example.com", 24)
+	setupRoutes(router, testDB)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test123", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusMovedPermanently, w.Code, "Expected status 200 OK")
+	assert.Equal(t, "https://example.com", w.Header().Get("Location"))
+}
