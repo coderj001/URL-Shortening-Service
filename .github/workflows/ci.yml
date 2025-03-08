@@ -41,8 +41,5 @@ jobs:
       - name: Copy .env File
         run: cp .env.example .env
 
-      - name: Wait for MySQL to be Ready
-        run: sleep 15
-
       - name: Run Tests
         run: go test ./... -v
