@@ -5,27 +5,35 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/coderj001/URL-shortener/api/database"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-var testDB *database.MySQLStore
+type APITestSuite struct {
+	suite.Suite
+	db     *database.MySQLStore
+	router *gin.Engine
+}
 
-func TestMain(m *testing.M) {
+func (s *APITestSuite) SetupSuite() {
 	if err := godotenv.Load("./.env"); err != nil {
 		panic("Failed to load .env file")
 	}
-
-	exitCode := m.Run()
-	os.Exit(exitCode)
+	s.db, _ = database.NewMySQLStore()
+	s.router = gin.Default()
 }
 
-func TestPingPong(t *testing.T) {
+func (s *APITestSuite) TearDownSuite() {
+	s.db.Exec("DROP TABLE IF EXISTS rate_limits;")
+	s.db.Exec("DROP TABLE IF EXISTS urls;")
+	s.db.Close()
+}
+
+func (s *APITestSuite) TestPingPong() {
 	router := gin.Default()
 	setupRoutes(router, nil)
 
@@ -33,22 +41,15 @@ func TestPingPong(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/ping", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+	s.Equal(http.StatusOK, w.Code)
 	expectedBody := `{"ping":"pong"}`
-	assert.Equal(t, expectedBody, w.Body.String())
+	s.Equal(expectedBody, w.Body.String())
 }
 
-func TestShortenURL(t *testing.T) {
+func (s *APITestSuite) TestShortenURL() {
 	gin.SetMode(gin.TestMode)
-
 	router := gin.Default()
-	testDB, _ = database.NewMySQLStore() // Ensure DB is initialized
-	defer func() {
-		testDB.Exec("DROP TABLE IF EXISTS rate_limits;")
-		testDB.Exec("DROP TABLE IF EXISTS urls;")
-		testDB.Close()
-	}()
-	setupRoutes(router, testDB)
+	setupRoutes(router, s.db)
 
 	body := `{"url": "https://example.com", "short": "test123", "expiry": 24}`
 	req, _ := http.NewRequest("POST", "/api/v1", bytes.NewBufferString(body))
@@ -58,33 +59,31 @@ func TestShortenURL(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	// Assertions
-	assert.Equal(t, http.StatusOK, w.Code, "Expected status 200 OK")
+	s.Equal(http.StatusOK, w.Code, "Expected status 200 OK")
 
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Nil(t, err, "Response should be valid JSON")
+	s.Nil(err, "Response should be valid JSON")
 
-	assert.Equal(t, "https://example.com", response["url"], "Expected URL to match")
-	assert.Equal(t, "localhost:3000/test123", response["short"], "Expected short code to match")
+	s.Equal("https://example.com", response["url"], "Expected URL to match")
+	s.Equal("localhost:3000/test123", response["short"], "Expected short code to match")
 }
 
-func TestResolveURL(t *testing.T) {
+func (s *APITestSuite) TestResolveURL() {
 	gin.SetMode(gin.TestMode)
-
 	router := gin.Default()
-	testDB, _ = database.NewMySQLStore() // Ensure DB is initialized
-	defer func() {
-		testDB.Exec("DROP TABLE IF EXISTS rate_limits;")
-		testDB.Exec("DROP TABLE IF EXISTS urls;")
-		testDB.Close()
-	}()
-	testDB.SaveURL("test123", "https://example.com", 24)
-	setupRoutes(router, testDB)
+
+	s.db.SaveURL("test124", "https://google.com", 24)
+	setupRoutes(router, s.db)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/test123", nil)
+	req, _ := http.NewRequest("GET", "/test124", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusMovedPermanently, w.Code, "Expected status 200 OK")
-	assert.Equal(t, "https://example.com", w.Header().Get("Location"))
+	s.Equal(http.StatusMovedPermanently, w.Code, "Expected status 200 OK")
+	s.Equal("https://google.com", w.Header().Get("Location"))
+}
+
+func TestAPI(t *testing.T) {
+	suite.Run(t, new(APITestSuite))
 }
