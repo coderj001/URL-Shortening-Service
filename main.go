@@ -23,7 +23,7 @@ func setupRoutes(router *gin.Engine, db *database.MySQLStore) {
 	router.POST("/api/v1", func(c *gin.Context) {
 		routes.ShortenURL(c, db)
 	})
-	router.GET("api/v1/clicks/:shortID", func(c *gin.Context) {
+	router.GET("api/v1/analytics/:shortID", func(c *gin.Context) {
 		routes.AnalyticsShortURL(c, db)
 	})
 }

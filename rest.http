@@ -22,5 +22,5 @@ Content-Type: {{contenttype}}
 
 ###
 
-GET {{url}}/api/v1/clicks/abc
+GET {{url}}/api/v1/analytics/abc
 Content-Type: {{contenttype}}

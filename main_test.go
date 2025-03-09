@@ -52,7 +52,7 @@ func (s *TestSuite) TestShortenURL() {
 	router := gin.Default()
 	setupRoutes(router, s.db)
 
-	body := `{"url": "https://youtube.com", "short": "test125", "expiry": 24}`
+	body := `{"url": "https://youtube.com", "short": "test129", "expiry": 24}`
 	req, _ := http.NewRequest("POST", "/api/v1", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -67,7 +67,7 @@ func (s *TestSuite) TestShortenURL() {
 	s.Nil(err, "Response should be valid JSON")
 
 	s.Equal("https://youtube.com", response["url"], "Expected URL to match")
-	s.Equal("localhost:3000/test125", response["short"], "Expected short code to match")
+	s.Equal("localhost:3000/test129", response["short"], "Expected short code to match")
 }
 
 func (s *TestSuite) TestResolveURL() {
@@ -83,6 +83,27 @@ func (s *TestSuite) TestResolveURL() {
 
 	s.Equal(http.StatusMovedPermanently, w.Code, "Expected status 200 OK")
 	s.Equal("https://google.com", w.Header().Get("Location"))
+}
+
+func (s *TestSuite) TestAnalyticsURL() {
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+
+	s.db.SaveURL("test125", "https://github.com", 24)
+	s.db.UpdateAnalytics("test125")
+	s.db.UpdateAnalytics("test125")
+
+	setupRoutes(router, s.db)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/v1/analytics/test125", nil)
+	router.ServeHTTP(w, req)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	s.Nil(err, "Response should be valid JSON")
+	s.Equal(http.StatusOK, w.Code, "Expected status 200 OK")
+	s.Equal("test125", response["short_id"], "Expected short_id to match test125")
+	s.Equal(2, int(response["clicks"].(float64)), "Expected clicks to be 2")
 }
 
 func (s *TestSuite) TestSaveURL() {
