@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	apitypes "github.com/coderj001/URL-shortener/api"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -55,7 +56,6 @@ func NewMySQLStore() (*MySQLStore, error) {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			short_url VARCHAR(255) UNIQUE NOT NULL,
 			original_url TEXT NOT NULL,
-			clicks INTEGER DEFAULT 0,
 			expires_at TIMESTAMP NOT NULL
 		);`
 
@@ -75,31 +75,43 @@ func NewMySQLStore() (*MySQLStore, error) {
 		return nil, fmt.Errorf("failed to create tables: %w", err)
 	}
 
+	analyticsTableQuery := `
+		CREATE TABLE IF NOT EXISTS analytics (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			short_id VARCHAR(255) UNIQUE NOT NULL,
+			clicks INTEGER DEFAULT 1,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		);`
+
+	if _, err := db.Exec(analyticsTableQuery); err != nil {
+		return nil, fmt.Errorf("failed to create tables: %w", err)
+	}
+
 	return &MySQLStore{db: db}, nil
 }
 
-func (s *MySQLStore) GetClickCount(shortID string) (int, error) {
-	var clicks int
+func (s *MySQLStore) GetURLAnalytics(shortID string) (*apitypes.URLAnalytics, error) {
+	analytics := &apitypes.URLAnalytics{ShortID: shortID}
 	err := s.db.QueryRow(
-		"SELECT clicks FROM urls WHERE short_url = ? AND expires_at > NOW()",
+		"SELECT clicks, created_at, updated_at FROM analytics where short_id = ?",
 		shortID,
-	).Scan(&clicks)
+	).Scan(
+		&analytics.Clicks,
+		&analytics.CreatedAt,
+		&analytics.UpdatedAt)
 	if err != nil {
-		return 0, err
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("Ananlytics db yet to be created.")
+		}
 	}
-	return clicks, nil
+	return analytics, nil
 }
 
-func (s *MySQLStore) ClickCount(short string) error {
-	var click int
-	err := s.db.QueryRow(
-		"SELECT clicks FROM urls WHERE short_url = ? AND expires_at > NOW()",
-		short,
-	).Scan(&click)
-	if err != nil {
-		return err
-	}
-	_, err = s.db.Exec("UPDATE urls SET clicks = ? WHERE short_url = ?", click+1, short)
+func (s *MySQLStore) UpdateAnalytics(shortID string) error {
+	_, err := s.db.Exec(`
+		INSERT INTO analytics (short_id) VALUES (?) 
+		ON DUPLICATE KEY UPDATE clicks = clicks + 1	`, shortID)
 	if err != nil {
 		return err
 	}

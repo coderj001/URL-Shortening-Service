@@ -7,19 +7,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/coderj001/URL-shortener/api/database"
+	"github.com/coderj001/URL-shortener/database"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
 )
 
-type APITestSuite struct {
+type TestSuite struct {
 	suite.Suite
 	db     *database.MySQLStore
 	router *gin.Engine
 }
 
-func (s *APITestSuite) SetupSuite() {
+func (s *TestSuite) SetupSuite() {
 	if err := godotenv.Load("./.env"); err != nil {
 		panic("Failed to load .env file")
 	}
@@ -27,13 +27,14 @@ func (s *APITestSuite) SetupSuite() {
 	s.router = gin.Default()
 }
 
-func (s *APITestSuite) TearDownSuite() {
+func (s *TestSuite) TearDownSuite() {
 	s.db.Exec("DROP TABLE IF EXISTS rate_limits;")
 	s.db.Exec("DROP TABLE IF EXISTS urls;")
+	s.db.Exec("DROP TABLE IF EXISTS analytics;")
 	s.db.Close()
 }
 
-func (s *APITestSuite) TestPingPong() {
+func (s *TestSuite) TestPingPong() {
 	router := gin.Default()
 	setupRoutes(router, nil)
 
@@ -46,7 +47,7 @@ func (s *APITestSuite) TestPingPong() {
 	s.Equal(expectedBody, w.Body.String())
 }
 
-func (s *APITestSuite) TestShortenURL() {
+func (s *TestSuite) TestShortenURL() {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	setupRoutes(router, s.db)
@@ -69,7 +70,7 @@ func (s *APITestSuite) TestShortenURL() {
 	s.Equal("localhost:3000/test125", response["short"], "Expected short code to match")
 }
 
-func (s *APITestSuite) TestResolveURL() {
+func (s *TestSuite) TestResolveURL() {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 
@@ -84,7 +85,7 @@ func (s *APITestSuite) TestResolveURL() {
 	s.Equal("https://google.com", w.Header().Get("Location"))
 }
 
-func (s *APITestSuite) TestSaveURL() {
+func (s *TestSuite) TestSaveURL() {
 	err := s.db.SaveURL("abc1234", "https://gmail.com", 24)
 	s.Nil(err, "Expected no error when saving a URL")
 
@@ -94,13 +95,13 @@ func (s *APITestSuite) TestSaveURL() {
 	s.Equal("https://gmail.com", url, "Expected the retrieved URL to match")
 }
 
-func (s *APITestSuite) TestGetURL_NotFound() {
+func (s *TestSuite) TestGetURL_NotFound() {
 	url, err := s.db.GetURL("nonexistent")
 	s.Nil(err, "Expected no error when retrieving a nonexistent URL")
 	s.Empty(url, "Expected an empty result for nonexistent URL")
 }
 
-func (s *APITestSuite) TestRateLimit() {
+func (s *TestSuite) TestRateLimit() {
 	ip := "localhost"
 
 	remaining, _, err := s.db.CheckRateLimit(ip)
@@ -113,21 +114,21 @@ func (s *APITestSuite) TestRateLimit() {
 	s.Equal(8, remaining, "Expected remaining limit to decrease")
 }
 
-func (s *APITestSuite) TestClickCount() {
+func (s *TestSuite) TestClickCount() {
 	// Save a test URL
 	s.db.SaveURL("test123", "https://example.com", 24)
 
 	// Increment clicks
-	err := s.db.ClickCount("test123")
+	err := s.db.UpdateAnalytics("test123")
 	s.Nil(err)
 
 	// Verify clicks count
 	var clicks int
-	err = s.db.DB().QueryRow("SELECT clicks FROM urls WHERE short_url = ?", "test123").Scan(&clicks)
+	err = s.db.DB().QueryRow("SELECT clicks FROM analytics WHERE short_id = ?", "test123").Scan(&clicks)
 	s.Nil(err)
 	s.Equal(1, clicks, "Expected 1 click count")
 }
 
 func TestAPI(t *testing.T) {
-	suite.Run(t, new(APITestSuite))
+	suite.Run(t, new(TestSuite))
 }

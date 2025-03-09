@@ -6,7 +6,7 @@ A simple URL shortener built with Go, Gin, and MySQL.
 - [x] Shorten URLs with custom aliases
 - [x] Redirect shortened URLs
 - [x] Rate limiting to prevent abuse
-- [x] Track URL clicks
+- [x] Track URL clicks (updates)
 - [ ] Implement structured logging
 - [ ] Implement a ID generation mechanism 
 - [ ] Timestamp of creation and last access

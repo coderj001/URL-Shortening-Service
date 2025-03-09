@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/coderj001/URL-shortener/api/database"
-	"github.com/coderj001/URL-shortener/api/helpers"
+	"github.com/coderj001/URL-shortener/database"
+	"github.com/coderj001/URL-shortener/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -29,7 +29,7 @@ type response struct {
 
 func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 	var body request
-	if err := c.ShouldBindJSON(&body); err != nil {
+	if err := parseRequest(c, &body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
@@ -96,4 +96,11 @@ func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 		XRateRemaining:  remaining,
 		XRateLimitReset: math.Ceil(time.Until(resetAt).Minutes()),
 	})
+}
+
+func parseRequest(c *gin.Context, body any) error {
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	return nil
 }

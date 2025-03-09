@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/coderj001/URL-shortener/api/database"
+	"github.com/coderj001/URL-shortener/database"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,7 +21,7 @@ func ResolveURL(c *gin.Context, db *database.MySQLStore) {
 		return
 	}
 
-	err = db.ClickCount(short)
+	err = db.UpdateAnalytics(short)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error while updating click count"})
 		return
