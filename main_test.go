@@ -67,7 +67,7 @@ func (s *TestSuite) TestShortenURL() {
 	s.Nil(err, "Response should be valid JSON")
 
 	s.Equal("https://youtube.com", response["url"], "Expected URL to match")
-	s.Equal("localhost:3000/test129", response["short"], "Expected short code to match")
+	s.Equal("test129", response["short"], "Expected short code to match")
 }
 
 func (s *TestSuite) TestResolveURL() {
