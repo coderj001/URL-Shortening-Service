@@ -9,18 +9,16 @@ import (
 	"github.com/coderj001/URL-shortener/database"
 	"github.com/coderj001/URL-shortener/helpers"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type request struct {
-	URL         string        `json:"url"`
-	CustomShort string        `json:"short"`
-	Expiry      time.Duration `json:"expiry"`
+	URL    string        `json:"url"`
+	Expiry time.Duration `json:"expiry"`
 }
 
 type response struct {
 	URL             string        `json:"url"`
-	CustomShort     string        `json:"short"`
+	ShortID         string        `json:"short_id"`
 	Expiry          time.Duration `json:"expiry"`
 	XRateRemaining  int           `json:"rate_limit"`
 	XRateLimitReset float64       `json:"rate_limit_reset"`
@@ -61,11 +59,12 @@ func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 
 	body.URL = helpers.EnforceHTTP(body.URL)
 
+	// TODO: update for premium users - can have 4 digits shortner
 	var short string
-	if body.CustomShort == "" {
-		short = uuid.New().String()[:6]
-	} else {
-		short = body.CustomShort
+	short, err = helpers.GenerateID(9)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Unable to generate shortID"})
+		return
 	}
 
 	// Check existing short URL
@@ -90,7 +89,7 @@ func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 
 	c.JSON(http.StatusOK, response{
 		URL:             body.URL,
-		CustomShort:     short,
+		ShortID:         short,
 		Expiry:          body.Expiry,
 		XRateRemaining:  remaining,
 		XRateLimitReset: math.Ceil(time.Until(resetAt).Minutes()),

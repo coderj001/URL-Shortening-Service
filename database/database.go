@@ -47,9 +47,11 @@ func NewMySQLStore() (*MySQLStore, error) {
 	urlsTableQuery := `
 		CREATE TABLE IF NOT EXISTS urls (
 			id INT AUTO_INCREMENT PRIMARY KEY,
-			short_url VARCHAR(255) UNIQUE NOT NULL,
+			short_id VARCHAR(255) UNIQUE NOT NULL,
 			original_url TEXT NOT NULL,
-			expires_at TIMESTAMP NOT NULL
+			expires_at TIMESTAMP NOT NULL,
+			INDEX idx_expires_at(expires_at),
+			UNIQUE INDEX idx_short_id(short_id)
 		);`
 
 	if _, err := db.Exec(urlsTableQuery); err != nil {
@@ -114,7 +116,7 @@ func (s *MySQLStore) UpdateAnalytics(shortID string) error {
 func (s *MySQLStore) SaveURL(short, original string, expiry time.Duration) error {
 	expiresAt := time.Now().Add(expiry * time.Hour)
 	_, err := s.db.Exec(
-		"INSERT INTO urls (short_url, original_url, expires_at) VALUES (?, ?, ?)",
+		"INSERT INTO urls (short_id, original_url, expires_at) VALUES (?, ?, ?)",
 		short, original, expiresAt,
 	)
 	return err
@@ -123,7 +125,7 @@ func (s *MySQLStore) SaveURL(short, original string, expiry time.Duration) error
 func (s *MySQLStore) GetURL(short string) (string, error) {
 	var original string
 	err := s.db.QueryRow(
-		"SELECT original_url FROM urls WHERE short_url = ? AND expires_at > NOW()",
+		"SELECT original_url FROM urls WHERE short_id = ? AND expires_at > NOW()",
 		short,
 	).Scan(&original)
 

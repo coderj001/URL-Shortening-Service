@@ -8,8 +8,8 @@ A simple URL shortener built with Go, Gin, and MySQL.
 - [x] Rate limiting to prevent abuse
 - [x] Track URL clicks (updates)
 - [x] Implement structured logging
-- [ ] Implement a ID generation mechanism 
-- [ ] Timestamp of creation and last access
+- [x] Implement a ID generation mechanism 
+- [x] Timestamp of creation and last access
 - [ ] Implement Redis/Memcached for caching frequent URL redirects
 - [ ] Create a separate analytics microservice
 - [ ] Soft delete mechanism for unused/expired URLs

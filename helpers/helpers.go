@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"crypto/rand"
 	"strings"
 
 	"github.com/coderj001/URL-shortener/config"
@@ -32,4 +33,22 @@ func RemoveDomainError(url string) bool {
 		return false
 	}
 	return true
+}
+
+func GenerateID(length int) (string, error) {
+	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+
+	var id string
+	for _, byte := range b {
+		// Use modulo to map random bytes to our charset
+		idx := int(byte) % len(charset)
+		id += string(charset[idx])
+	}
+
+	return id, nil
 }

@@ -28,6 +28,8 @@ func (s *TestSuite) SetupSuite() {
 }
 
 func (s *TestSuite) TearDownSuite() {
+	s.db.Exec("DROP INDEX idx_short_id ON urls;")
+	s.db.Exec("DROP INDEX idx_expires_at ON urls;")
 	s.db.Exec("DROP TABLE IF EXISTS rate_limits;")
 	s.db.Exec("DROP TABLE IF EXISTS urls;")
 	s.db.Exec("DROP TABLE IF EXISTS analytics;")
@@ -52,7 +54,7 @@ func (s *TestSuite) TestShortenURL() {
 	router := gin.Default()
 	setupRoutes(router, s.db)
 
-	body := `{"url": "https://youtube.com", "short": "test129", "expiry": 24}`
+	body := `{"url": "https://youtube.com", "expiry": 24}`
 	req, _ := http.NewRequest("POST", "/api/v1", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -67,7 +69,7 @@ func (s *TestSuite) TestShortenURL() {
 	s.Nil(err, "Response should be valid JSON")
 
 	s.Equal("https://youtube.com", response["url"], "Expected URL to match")
-	s.Equal("test129", response["short"], "Expected short code to match")
+	s.Len(response["short_id"], 9, "Expected to be 9 chars")
 }
 
 func (s *TestSuite) TestResolveURL() {
