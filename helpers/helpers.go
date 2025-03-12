@@ -2,9 +2,14 @@ package helpers
 
 import (
 	"crypto/rand"
+	"errors"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/coderj001/URL-shortener/config"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 // EnforceHTTP ...
@@ -51,4 +56,43 @@ func GenerateID(length int) (string, error) {
 	}
 
 	return id, nil
+}
+
+func ParseRequest(c *gin.Context, body any) error {
+	if err := c.ShouldBindJSON(&body); err != nil {
+		return err
+	}
+	return nil
+}
+
+func GenerateToken(username string) (string, error) {
+	jwtKey := []byte(config.GetConfig().JWTSecret)
+
+	// Ensure secret key is properly loaded
+	if len(jwtKey) == 0 {
+		return "", errors.New("JWT secret key not set in environment variables")
+	}
+
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user": username,
+		"iss":  config.GetConfig().AppName,
+		"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
+		"iat":  time.Now().Unix(),                // Issued at
+	})
+	fmt.Printf("Token claims added: %+v\n", claims)
+
+	tokenString, err := claims.SignedString(jwtKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+// Token generation failed
+// SigningMethodHS256 (HMAC-SHA256) Type: symmetric signing algorithm
+// SigningMethodES256 (ECDSA-SHA256) Type: asymmetric signing algorithm
+
+func HandleError(c *gin.Context, httpStatus int, err error) {
+	c.JSON(httpStatus, gin.H{"error": err.Error()})
 }

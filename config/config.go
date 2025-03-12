@@ -24,10 +24,12 @@ func (db *DBConfig) GetDSN() string {
 }
 
 type Config struct {
-	DB    *DBConfig
-	Port  string
-	Host  string
-	Debug bool
+	DB        *DBConfig
+	Port      string
+	Host      string
+	JWTSecret string
+	AppName   string
+	Debug     bool
 }
 
 func (c *Config) GetDomain() string {
@@ -36,9 +38,11 @@ func (c *Config) GetDomain() string {
 
 func GetConfig() *Config {
 	return &Config{
-		Port:  getEnv("PORT", "3000"),
-		Host:  getEnv("HOST", "localhost"),
-		Debug: getEnv("DEBUG", "true") == "true",
+		Port:      getEnv("PORT", "3000"),
+		Host:      getEnv("HOST", "localhost"),
+		JWTSecret: getEnv("JWT_SECRET", ""),
+		AppName:   getEnv("APP_NAME", "url_short"),
+		Debug:     getEnv("DEBUG", "true") == "true",
 		DB: &DBConfig{
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnv("DB_PORT", "3306"),

@@ -83,6 +83,19 @@ func NewMySQLStore() (*MySQLStore, error) {
 		return nil, fmt.Errorf("failed to create tables: %w", err)
 	}
 
+	usersTableQuery := `
+	CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+	 auth_level INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	if _, err := db.Exec(usersTableQuery); err != nil {
+		return nil, fmt.Errorf("failed to create tables: %w", err)
+	}
+
 	return &MySQLStore{db: db}, nil
 }
 
@@ -189,4 +202,15 @@ func (s *MySQLStore) CheckRateLimit(ip string) (int, time.Time, error) {
 	}
 
 	return remaining, resetAt, nil
+}
+
+func (s *MySQLStore) SaveUser(username, password_hash string) error {
+	_, err := s.db.Exec("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, password_hash)
+	return err
+}
+
+func (s *MySQLStore) GetHashPassward(username string) (string, error) {
+	var hashedPassword string
+	err := s.db.QueryRow("SELECT password_hash FROM users WHERE username = ?", username).Scan(&hashedPassword)
+	return hashedPassword, err
 }

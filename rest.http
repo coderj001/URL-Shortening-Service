@@ -1,16 +1,13 @@
 @url = http://localhost:3000
 @contenttype = application/json
 
-###
-
+### Test URL
 GET {{url}}/ping
 
-###
-
+### Redirect
 GET {{url}}/0FL0EApfD
 
-###
-
+### Short URL create
 POST {{url}}/api/v1
 Content-Type: {{contenttype}}
 
@@ -20,7 +17,26 @@ Content-Type: {{contenttype}}
    "expiry": 24
 }
 
-###
-
+### Get analytics
 GET {{url}}/api/v1/analytics/0FL0EApfD
 Content-Type: {{contenttype}}
+
+### Users register
+POST {{url}}/api/v1/register
+Content-Type: {{contenttype}}
+
+{
+   "username": "amir",
+   "password": "Qwerty"
+}
+
+
+### Users login
+POST {{url}}/api/v1/login
+Content-Type: {{contenttype}}
+
+{
+   "username": "amir",
+   "password": "Qwerty"
+}
+

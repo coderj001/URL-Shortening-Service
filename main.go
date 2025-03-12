@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/coderj001/URL-shortener/api/routes"
+	"github.com/coderj001/URL-shortener/api/users"
 	"github.com/coderj001/URL-shortener/config"
 	"github.com/coderj001/URL-shortener/database"
 	"github.com/coderj001/URL-shortener/logger"
@@ -34,6 +35,10 @@ func setupRoutes(router *gin.Engine, db *database.MySQLStore) {
 	})
 	router.GET("api/v1/analytics/:shortID", func(c *gin.Context) {
 		routes.AnalyticsShortURL(c, db)
+	})
+
+	router.POST("api/v1/register", func(c *gin.Context) {
+		users.RegisterUser(c, db)
 	})
 }
 

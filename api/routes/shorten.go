@@ -26,7 +26,7 @@ type response struct {
 
 func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 	var body request
-	if err := parseRequest(c, &body); err != nil {
+	if err := helpers.ParseRequest(c, &body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
@@ -94,11 +94,4 @@ func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 		XRateRemaining:  remaining,
 		XRateLimitReset: math.Ceil(time.Until(resetAt).Minutes()),
 	})
-}
-
-func parseRequest(c *gin.Context, body any) error {
-	if err := c.ShouldBindJSON(&body); err != nil {
-		return err
-	}
-	return nil
 }
