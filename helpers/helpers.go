@@ -3,7 +3,6 @@ package helpers
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -79,7 +78,6 @@ func GenerateToken(username string) (string, error) {
 		"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
 		"iat":  time.Now().Unix(),                // Issued at
 	})
-	fmt.Printf("Token claims added: %+v\n", claims)
 
 	tokenString, err := claims.SignedString(jwtKey)
 	if err != nil {

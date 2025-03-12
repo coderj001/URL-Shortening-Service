@@ -1,4 +1,4 @@
-package routes
+package shortener
 
 import (
 	"net/http"

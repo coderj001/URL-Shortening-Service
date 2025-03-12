@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/coderj001/URL-shortener/api/routes"
+	"github.com/coderj001/URL-shortener/api/shortener"
 	"github.com/coderj001/URL-shortener/api/users"
 	"github.com/coderj001/URL-shortener/config"
 	"github.com/coderj001/URL-shortener/database"
@@ -28,17 +28,20 @@ func setupRoutes(router *gin.Engine, db *database.MySQLStore) {
 	})
 
 	router.GET("/:url", func(c *gin.Context) {
-		routes.ResolveURL(c, db)
+		shortener.ResolveURL(c, db)
 	})
 	router.POST("/api/v1", func(c *gin.Context) {
-		routes.ShortenURL(c, db)
+		shortener.ShortenURL(c, db)
 	})
 	router.GET("api/v1/analytics/:shortID", func(c *gin.Context) {
-		routes.AnalyticsShortURL(c, db)
+		shortener.AnalyticsShortURL(c, db)
 	})
 
 	router.POST("api/v1/register", func(c *gin.Context) {
 		users.RegisterUser(c, db)
+	})
+	router.POST("api/v1/login", func(c *gin.Context) {
+		users.LoginUser(c, db)
 	})
 }
 
@@ -54,6 +57,7 @@ func main() {
 
 	//? Middleware
 	router.Use(logger.Logger())
+	// router.Use(auth.AuthMiddleware())
 
 	setupRoutes(router, db)
 

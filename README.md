@@ -15,9 +15,9 @@ A simple URL shortener built with Go, Gin, and MySQL.
 - [ ] Soft delete mechanism for unused/expired URLs
 - [ ] Periodic cleanup job to remove expired entries
 - [ ] Block URLs from known malicious domains
-- [ ] Implement user registration and authentication
+- [x] Implement user registration and authentication
 - [ ] OAuth/JWT-based authentication
-- [ ] Role-based access control (RBAC)
+- [x] Role-based access control (RBAC)
   - [ ] Free tier users
   - [ ] Premium users with additional features
 - [ ] Optimize database queries and indexing
@@ -38,31 +38,56 @@ A simple URL shortener built with Go, Gin, and MySQL.
 2. The service will be available at `http://localhost:3000`.
 
 ## API Endpoints
-### Shorten a URL
-- **Endpoint:** `POST /api/v1`
-- **Request Body:**
+
+## Test URL
+- **Method**: GET  
+- **Endpoint**: `/ping`
+
+## Redirect
+- **Method**: GET  
+- **Endpoint**: `/0FL0EApfD`
+
+## Short URL Create
+- **Method**: POST  
+- **Endpoint**: `/api/v1`  
+- **Headers**: `Content-Type: application/json`  
+- **Body**:
   ```json
   {
-    "url": "https://example.com",
-    "short": "customAlias",  // Optional
-    "expiry": 24  // Expiry in hours (Optional, default: 24h)
-  }
-  ```
-- **Response:**
-  ```json
-  {
-    "url": "https://example.com",
-    "short": "localhost:3000/customAlias",
-    "expiry": 24,
-    "rate_limit": 10,
-    "rate_limit_reset": 30
+     "url": "http://example.com",
+     "short": "abc",
+     "expiry": 24
   }
   ```
 
-### Resolve a Short URL
-- **Endpoint:** `GET /:shortURL`
-- **Response:** Redirects to the original URL.
+## Get Analytics
+- **Method**: GET  
+- **Endpoint**: `/api/v1/analytics/0FL0EApfD`  
+- **Headers**: `Content-Type: application/json`
 
+## Users Register
+- **Method**: POST  
+- **Endpoint**: `/api/v1/register`  
+- **Headers**: `Content-Type: application/json`  
+- **Body**:
+  ```json
+  {
+     "username": "amir",
+     "password": "Qwerty"
+  }
+  ```
+
+## Users Login
+- **Method**: POST  
+- **Endpoint**: `/api/v1/login`  
+- **Headers**: `Content-Type: application/json`  
+- **Body**:
+  ```json
+  {
+     "username": "amir",
+     "password": "Qwerty"
+  }
+  ```
 
 
 ## License

@@ -59,24 +59,24 @@ func LoginUser(c *gin.Context, db *database.MySQLStore) {
 	}
 
 	if err := helpers.ParseRequest(c, &userInput); err != nil {
-		helpers.HandleError(c, http.StatusBadRequest, fmt.Errorf("Invalid request"))
+		helpers.HandleError(c, http.StatusBadRequest, fmt.Errorf("invalid request"))
 		return
 	}
 
 	hashedPassword, err := db.GetHashPassward(userInput.Username)
 	if err != nil {
-		helpers.HandleError(c, http.StatusBadGateway, fmt.Errorf("Database Errors"))
+		helpers.HandleError(c, http.StatusBadGateway, fmt.Errorf("database errors"))
 		return
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(userInput.Password)); err != nil {
-		helpers.HandleError(c, http.StatusUnauthorized, fmt.Errorf("Invalid Credentials"))
+		helpers.HandleError(c, http.StatusUnauthorized, fmt.Errorf("invalid credentials"))
 		return
 	}
 
 	tokenString, err := helpers.GenerateToken(userInput.Username)
 
 	if err != nil {
-		helpers.HandleError(c, http.StatusInternalServerError, fmt.Errorf("Token generation failed, %w", err))
+		helpers.HandleError(c, http.StatusInternalServerError, fmt.Errorf("token generation failed, %w", err))
 		return
 	}
 
