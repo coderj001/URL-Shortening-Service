@@ -7,6 +7,7 @@ import (
 
 	"github.com/coderj001/URL-shortener/api/shortener"
 	"github.com/coderj001/URL-shortener/api/users"
+	"github.com/coderj001/URL-shortener/auth"
 	"github.com/coderj001/URL-shortener/config"
 	"github.com/coderj001/URL-shortener/database"
 	"github.com/coderj001/URL-shortener/logger"
@@ -57,7 +58,7 @@ func main() {
 
 	//? Middleware
 	router.Use(logger.Logger())
-	// router.Use(auth.AuthMiddleware())
+	router.Use(auth.AuthMiddleware(db))
 
 	setupRoutes(router, db)
 

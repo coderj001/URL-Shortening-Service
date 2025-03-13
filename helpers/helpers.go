@@ -73,10 +73,10 @@ func GenerateToken(username string) (string, error) {
 	}
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": username,
-		"iss":  config.GetConfig().AppName,
-		"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
-		"iat":  time.Now().Unix(),                // Issued at
+		"username": username,
+		"iss":      config.GetConfig().AppName,
+		"exp":      time.Now().Add(time.Hour).Unix(), // Expiration time
+		"iat":      time.Now().Unix(),                // Issued at
 	})
 
 	tokenString, err := claims.SignedString(jwtKey)

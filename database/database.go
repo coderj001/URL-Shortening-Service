@@ -214,3 +214,14 @@ func (s *MySQLStore) GetHashPassward(username string) (string, error) {
 	err := s.db.QueryRow("SELECT password_hash FROM users WHERE username = ?", username).Scan(&hashedPassword)
 	return hashedPassword, err
 }
+
+func (s *MySQLStore) GetUser(username string) (apitypes.User, error) {
+	var user apitypes.User
+	err := s.db.QueryRow("SELECT id, username, auth_level, created_at FROM users WHERE username = ?", username).Scan(
+		&user.ID,
+		&user.Username,
+		&user.AuthLevel,
+		&user.CreatedAt,
+	)
+	return user, err
+}

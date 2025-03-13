@@ -1,5 +1,6 @@
 @url = http://localhost:3000
 @contenttype = application/json
+@authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDE4NDg3NDMsImlhdCI6MTc0MTg0NTE0MywiaXNzIjoidXJsX3Nob3J0ZW5lciIsInVzZXJuYW1lIjoiYW1pciJ9.ZYnf9RWc8T_m-0ZIHyfYbH1byXYHZMdxGOGPcOt54CY
 
 ### Test URL
 GET {{url}}/ping
@@ -10,6 +11,7 @@ GET {{url}}/0FL0EApfD
 ### Short URL create
 POST {{url}}/api/v1
 Content-Type: {{contenttype}}
+Authorization: {{authorization}}
 
 {
    "url": "http://example.com",
@@ -39,4 +41,3 @@ Content-Type: {{contenttype}}
    "username": "amir",
    "password": "Qwerty"
 }
-
