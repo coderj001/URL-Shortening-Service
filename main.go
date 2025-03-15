@@ -37,6 +37,9 @@ func setupRoutes(router *gin.Engine, db *database.MySQLStore) {
 	router.GET("api/v1/analytics/:shortID", func(c *gin.Context) {
 		shortener.AnalyticsShortURL(c, db)
 	})
+	router.GET(("api/v1/urls"), func(c *gin.Context) {
+		shortener.AnalyticsShortIDList(c, db)
+	})
 
 	router.POST("api/v1/register", func(c *gin.Context) {
 		users.RegisterUser(c, db)

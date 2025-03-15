@@ -117,6 +117,7 @@ func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 		body.Expiry = 24
 	}
 
+	// TODO: set free and premium
 	var userID *uint
 	if value == auth.Authorized {
 		if v, ok := c.Get("user"); ok {

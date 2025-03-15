@@ -19,11 +19,18 @@ func RegisterUser(c *gin.Context, db *database.MySQLStore) {
 	}
 
 	if err := helpers.ParseRequest(c, &userInput); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		helpers.HandleError(
+			c,
+			http.StatusBadRequest,
+			fmt.Errorf("invalid request"),
+		)
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userInput.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(userInput.Password),
+		bcrypt.DefaultCost,
+	)
 
 	if err != nil {
 		helpers.HandleError(c, http.StatusInternalServerError, err)

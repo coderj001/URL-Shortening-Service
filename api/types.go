@@ -1,6 +1,16 @@
 package apitypes
 
-import "time"
+import (
+	"time"
+)
+
+type URL struct {
+	ID          string    `json:"id"`
+	ShortID     string    `json:"short_id"`
+	OriginalURL string    `json:"original_url"`
+	ExpiresAt   time.Time `json:"expires_at"`
+	UserID      uint      `json:"user_id"`
+}
 
 type URLAnalytics struct {
 	ShortID   string    `json:"short_id"`
@@ -17,6 +27,14 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func (u *User) HasPermission(requiredRole uint) bool {
-	return u.AuthLevel == requiredRole
+func (u *User) FreeUser() bool {
+	return u.AuthLevel == 1
+}
+
+func (u *User) PremiumUser() bool {
+	return u.AuthLevel == 2
+}
+
+func (u *User) Admin() bool {
+	return u.AuthLevel == 3
 }

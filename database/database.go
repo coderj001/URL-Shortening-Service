@@ -234,3 +234,28 @@ func (s *MySQLStore) GetUser(username string) (apitypes.User, error) {
 	)
 	return user, err
 }
+
+func (s *MySQLStore) GetShortIDList(userID uint) ([]apitypes.URL, error) {
+	var analytics []apitypes.URL
+
+	rows, err := s.db.Query("SELECT id, short_id, original_url, expires_at, user_id FROM urls WHERE user_id = ?", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var entry apitypes.URL
+		err := rows.Scan(&entry.ID, &entry.ShortID, &entry.OriginalURL, &entry.ExpiresAt, &entry.UserID)
+		if err != nil {
+			return nil, err
+		}
+		analytics = append(analytics, entry)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return analytics, nil
+}

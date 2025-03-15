@@ -1,7 +1,6 @@
 @url = http://localhost:3000
 @contenttype = application/json
-@authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDE4NDg3NDMsImlhdCI6MTc0MTg0NTE0MywiaXNzIjoidXJsX3Nob3J0ZW5lciIsInVzZXJuYW1lIjoiYW1pciJ9.ZYnf9RWc8T_m-0ZIHyfYbH1byXYHZMdxGOGPcOt54CY
-
+@authorization = eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIwNjI0NjEsImlhdCI6MTc0MjA1ODg2MSwiaXNzIjoidXJsX3Nob3J0ZW5lciIsInVzZXJuYW1lIjoiYW1pciJ9.51bh83eKW6hVHqEAFwls8Gbg5FscNDrP4dIjbElpaMcc5TA-qMp0da3EWiZw2Z5U3RSuQov9tAdyPZALlvj0tw
 ### Test URL
 GET {{url}}/ping
 
@@ -14,14 +13,19 @@ Content-Type: {{contenttype}}
 Authorization: {{authorization}}
 
 {
-   "url": "http://example.com",
-   "short": "abc",
+   "url": "http://google.com",
    "expiry": 24
 }
 
 ### Get analytics
-GET {{url}}/api/v1/analytics/0FL0EApfD
+GET {{url}}/api/v1/analytics/imq0q9xps
 Content-Type: {{contenttype}}
+
+### Get urls
+GET {{url}}/api/v1/urls
+Authorization: {{authorization}}
+Content-Type: {{contenttype}}
+
 
 ### Users register
 POST {{url}}/api/v1/register
