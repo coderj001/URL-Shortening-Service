@@ -43,6 +43,20 @@ func NewMySQLStore() (*MySQLStore, error) {
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
+
+	usersTableQuery := `
+	CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+	 auth_level INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	if _, err := db.Exec(usersTableQuery); err != nil {
+		return nil, fmt.Errorf("failed to create tables: %w", err)
+	}
+
 	// Ensure tables exist
 	urlsTableQuery := `
 		CREATE TABLE IF NOT EXISTS urls (
@@ -50,8 +64,10 @@ func NewMySQLStore() (*MySQLStore, error) {
 			short_id VARCHAR(255) UNIQUE NOT NULL,
 			original_url TEXT NOT NULL,
 			expires_at TIMESTAMP NOT NULL,
+			user_id INT,
 			INDEX idx_expires_at(expires_at),
-			UNIQUE INDEX idx_short_id(short_id)
+			UNIQUE INDEX idx_short_id(short_id),
+			FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 		);`
 
 	if _, err := db.Exec(urlsTableQuery); err != nil {
@@ -83,19 +99,6 @@ func NewMySQLStore() (*MySQLStore, error) {
 		return nil, fmt.Errorf("failed to create tables: %w", err)
 	}
 
-	usersTableQuery := `
-	CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-	 auth_level INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);`
-
-	if _, err := db.Exec(usersTableQuery); err != nil {
-		return nil, fmt.Errorf("failed to create tables: %w", err)
-	}
-
 	return &MySQLStore{db: db}, nil
 }
 
@@ -110,7 +113,7 @@ func (s *MySQLStore) GetURLAnalytics(shortID string) (*apitypes.URLAnalytics, er
 		&analytics.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("Ananlytics db yet to be created.")
+			return nil, err
 		}
 	}
 	return analytics, nil
@@ -126,12 +129,18 @@ func (s *MySQLStore) UpdateAnalytics(shortID string) error {
 	return nil
 }
 
-func (s *MySQLStore) SaveURL(short, original string, expiry time.Duration) error {
+func (s *MySQLStore) SaveURL(short_id, original string, expiry time.Duration, user_id *uint) error {
 	expiresAt := time.Now().Add(expiry * time.Hour)
-	_, err := s.db.Exec(
-		"INSERT INTO urls (short_id, original_url, expires_at) VALUES (?, ?, ?)",
-		short, original, expiresAt,
-	)
+	var err error
+	if user_id == nil {
+		_, err = s.db.Exec(
+			"INSERT INTO urls (short_id, original_url, expires_at) VALUES (?, ?, ?)",
+			short_id, original, expiresAt,
+		)
+	} else {
+		_, err = s.db.Exec(`INSERT INTO urls (short_id, original_url, expires_at, user_id) VALUES (?, ?, ?, ?)`, short_id, original, expiresAt, user_id)
+	}
+
 	return err
 }
 

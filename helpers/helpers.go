@@ -33,10 +33,7 @@ func RemoveDomainError(url string) bool {
 	newURL = strings.Replace(newURL, "www.", "", 1)
 	newURL = strings.Split(newURL, "/")[0]
 
-	if newURL == config.GetConfig().GetDomain() {
-		return false
-	}
-	return true
+	return newURL != config.GetConfig().GetDomain()
 }
 
 func GenerateID(length int) (string, error) {
@@ -72,7 +69,7 @@ func GenerateToken(username string) (string, error) {
 		return "", errors.New("JWT secret key not set in environment variables")
 	}
 
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
 		"username": username,
 		"iss":      config.GetConfig().AppName,
 		"exp":      time.Now().Add(time.Hour).Unix(), // Expiration time

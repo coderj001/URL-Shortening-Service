@@ -1,11 +1,14 @@
 package shortener
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"time"
 
 	"github.com/asaskevich/govalidator"
+	apitypes "github.com/coderj001/URL-shortener/api"
+	"github.com/coderj001/URL-shortener/auth"
 	"github.com/coderj001/URL-shortener/database"
 	"github.com/coderj001/URL-shortener/helpers"
 	"github.com/gin-gonic/gin"
@@ -25,56 +28,88 @@ type response struct {
 }
 
 func ShortenURL(c *gin.Context, db *database.MySQLStore) {
+	value, _ := c.Get("auth_status")
+
 	var body request
 	if err := helpers.ParseRequest(c, &body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		helpers.HandleError(
+			c,
+			http.StatusBadRequest,
+			fmt.Errorf("invalid request"),
+		)
 		return
 	}
 
 	// Rate limiting
 	remaining, resetAt, err := db.CheckRateLimit(c.ClientIP())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "rate limit check failed"})
+		helpers.HandleError(
+			c,
+			http.StatusInternalServerError,
+			fmt.Errorf("rate limit check failed"),
+		)
 		return
 	}
 
 	if remaining < 0 {
-		c.JSON(http.StatusTooManyRequests, gin.H{
-			"error":            "rate limit exceeded",
-			"rate_limit_reset": time.Until(resetAt).Minutes(),
-		})
+		helpers.HandleError(c, http.StatusInternalServerError, fmt.Errorf(
+			"rate limit exceeded, wait till %v",
+			time.Until(resetAt).Minutes(),
+		))
 		return
 	}
 
 	// URL validation
 	if !govalidator.IsURL(body.URL) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid URL"})
+		helpers.HandleError(
+			c,
+			http.StatusBadRequest,
+			fmt.Errorf("falid to validate"),
+		)
 		return
 	}
 
 	if !helpers.RemoveDomainError(body.URL) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "domain not allowed"})
+		helpers.HandleError(
+			c,
+			http.StatusForbidden,
+			fmt.Errorf("domain not allowed"),
+		)
 		return
 	}
 
 	body.URL = helpers.EnforceHTTP(body.URL)
 
-	// TODO: update for premium users - can have 4 digits shortner
-	var short string
-	short, err = helpers.GenerateID(9)
+	length := 9
+	if value == auth.Authorized {
+		length = 4
+	}
+	short, err := helpers.GenerateID(length)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Unable to generate shortID"})
+		helpers.HandleError(
+			c,
+			http.StatusForbidden,
+			fmt.Errorf("unable to generate shortid"),
+		)
 		return
 	}
 
 	// Check existing short URL
 	existing, err := db.GetURL(short)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		helpers.HandleError(
+			c,
+			http.StatusInternalServerError,
+			fmt.Errorf("database error"),
+		)
 		return
 	}
 	if existing != "" {
-		c.JSON(http.StatusConflict, gin.H{"error": "short URL already exists"})
+		helpers.HandleError(
+			c,
+			http.StatusConflict,
+			fmt.Errorf("short URL already exists"),
+		)
 		return
 	}
 
@@ -82,8 +117,16 @@ func ShortenURL(c *gin.Context, db *database.MySQLStore) {
 		body.Expiry = 24
 	}
 
-	if err := db.SaveURL(short, body.URL, body.Expiry); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save URL"})
+	var userID *uint
+	if value == auth.Authorized {
+		if v, ok := c.Get("user"); ok {
+			if user, ok := v.(apitypes.User); ok {
+				userID = &user.ID
+			}
+		}
+	}
+	if err := db.SaveURL(short, body.URL, body.Expiry, userID); err != nil {
+		helpers.HandleError(c, http.StatusInternalServerError, fmt.Errorf("failed to save URL"))
 		return
 	}
 

@@ -1,6 +1,8 @@
 package users
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -65,7 +67,11 @@ func LoginUser(c *gin.Context, db *database.MySQLStore) {
 
 	hashedPassword, err := db.GetHashPassward(userInput.Username)
 	if err != nil {
-		helpers.HandleError(c, http.StatusBadGateway, fmt.Errorf("database errors"))
+		if errors.Is(err, sql.ErrNoRows) {
+			helpers.HandleError(c, http.StatusBadGateway, fmt.Errorf("user don't exists"))
+			return
+		}
+		helpers.HandleError(c, http.StatusBadGateway, fmt.Errorf("database error"))
 		return
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(userInput.Password)); err != nil {
