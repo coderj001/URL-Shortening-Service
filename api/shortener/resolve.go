@@ -21,6 +21,8 @@ func ResolveURL(c *gin.Context, db *database.MySQLStore) {
 		return
 	}
 
+	//?INFO: Observer Pattern
+	//?This is similar to how observers are notified of an event. The ResolveURL function acts as the subject, and the analytics update mechanism acts as an observer.
 	err = db.UpdateAnalytics(short)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error while updating click count"})

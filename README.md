@@ -16,11 +16,11 @@ A simple URL shortener built with Go, Gin, and MySQL.
 - [ ] Periodic cleanup job to remove expired entries
 - [ ] Block URLs from known malicious domains
 - [x] Implement user registration and authentication
-- [ ] OAuth/JWT-based authentication
+- [x] OAuth/JWT-based authentication
 - [x] Role-based access control (RBAC)
   - [ ] Free tier users
   - [ ] Premium users with additional features
-- [ ] Optimize database queries and indexing
+- [x] Optimize database queries and indexing
 - [ ] Add TDD 
 - [ ] Integration Tests
 - [ ] Frontend/Template HTmX
