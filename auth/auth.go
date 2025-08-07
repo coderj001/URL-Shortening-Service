@@ -7,8 +7,8 @@ import (
 	"github.com/coderj001/URL-shortener/config"
 	"github.com/coderj001/URL-shortener/database"
 	"github.com/coderj001/URL-shortener/helpers"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
